@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Table;
@@ -6,26 +8,41 @@ namespace Wivuu.AzTableCopy
 {
     internal class WebConsumer : ITableEntryConsumer
     {
-        private int? httpPort;
+        public int HttpPort { get; }
+        public BlockingCollection<DynamicTableEntity> PubSub { get; }
+        public TaskCompletionSource<int> Completion { get; }
 
         public WebConsumer(int? httpPort)
         {
-            this.httpPort = httpPort;
-        }
+            HttpPort   = httpPort ?? 8081;
+            PubSub     = new BlockingCollection<DynamicTableEntity>(100_000);
+            Completion = new TaskCompletionSource<int>();
 
-        public Task DoneAsync()
-        {
-            throw new System.NotImplementedException();
+            // TODO: Start web server & consumer
+
+            Console.WriteLine($"Serving table csv on http://localhost:{HttpPort}");
         }
 
         public Task TakeAsync(IList<DynamicTableEntity> entries)
         {
-            throw new System.NotImplementedException();
+            for (var i = 0; i < entries.Count; ++i)
+                PubSub.Add(entries[i]);
+
+            return Task.CompletedTask;
+        }
+
+        public async Task DoneAsync()
+        {
+            PubSub.CompleteAdding();
+            
+            await Completion.Task;
         }
         
         public void Dispose()
         {
-            throw new System.NotImplementedException();
+            // TODO: Close webserver
+
+            PubSub.Dispose();
         }
     }
 }

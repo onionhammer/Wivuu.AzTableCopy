@@ -57,6 +57,7 @@ namespace Wivuu.AzTableCopy
                 {
                     csv.WriteField("PartitionKey");
                     csv.WriteField("RowKey");
+                    csv.WriteField("Timestamp");
                     csv.WriteField("Data");
                     await csv.NextRecordAsync();
 
@@ -64,6 +65,7 @@ namespace Wivuu.AzTableCopy
                     {
                         csv.WriteField(row.PartitionKey);
                         csv.WriteField(row.RowKey);
+                        csv.WriteField(row.Timestamp);
                         
                         var data = JsonConvert.SerializeObject(
                             row.Properties.Select(p => (
