@@ -43,7 +43,6 @@ namespace Wivuu.AzTableCopy
                 // Create N consumers                
                 from i in Enumerable.Range(0, N)
                 select Task.Run(() => Consumer(i))
-
             ).ContinueWith(_ => Completion.SetResult(0));
 
             async Task Consumer(int index)
@@ -65,7 +64,7 @@ namespace Wivuu.AzTableCopy
                     {
                         csv.WriteField(row.PartitionKey);
                         csv.WriteField(row.RowKey);
-                        csv.WriteField(row.Timestamp);
+                        csv.WriteField(row.Timestamp.UtcDateTime.ToString("O"));
                         
                         var data = JsonConvert.SerializeObject(
                             row.Properties.Select(p => (

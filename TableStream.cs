@@ -35,7 +35,7 @@ namespace Wivuu.AzTableCopy
                 tableUri.Uri,
                 new StorageCredentials(account, sourceKey));
 
-            Table = tableClient.GetTableReference(fullUri.Segments[1]);
+            Table    = tableClient.GetTableReference(fullUri.Segments[1]);
             Consumer = consumer;
         }
 
