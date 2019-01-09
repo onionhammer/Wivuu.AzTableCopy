@@ -6,6 +6,7 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <TieredCompilation>true</TieredCompilation>
 
+    <PackageId>Wivuu.AzTableCopy</PackageId>
     <Version>0.1.0</Version>
     <Title>AzTableCopy</Title>
     <Authors>Erik O'Leary (@onionhammer)</Authors>
