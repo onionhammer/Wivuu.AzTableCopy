@@ -12,7 +12,7 @@ namespace Wivuu.AzTableCopy
             var app = new CommandLineApplication
             {
                 Name        = "AzTableCopy",
-                Description = "Copies input azure table to a stream, optionally remaining open and polling for changes as they occur"
+                Description = "Copies input azure table to files, or use as a library"
             };
 
             app.HelpOption(inherited: true);
@@ -23,7 +23,7 @@ namespace Wivuu.AzTableCopy
             var pkOption        = app.Option("--partition <STRING>", "PK partitioning rule", CommandOptionType.SingleValue);
             var parallelOption  = app.Option("--parallel <NUM>", "Parallelism", CommandOptionType.SingleValue);
 
-            var destOption = app.Option("-d|--dest <PATH>", "Destiation file path", CommandOptionType.SingleValue).IsRequired();
+            var destOption = app.Option("-d|--dest <PATH>", "Destination file path", CommandOptionType.SingleValue).IsRequired();
 
             // Execute command line interface
             app.OnExecute(() => ExecuteAsync().GetAwaiter().GetResult());

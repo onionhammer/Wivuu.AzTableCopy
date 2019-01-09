@@ -5,6 +5,19 @@
     <LangVersion>latest</LangVersion>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <TieredCompilation>true</TieredCompilation>
+
+    <Version>0.1.0</Version>
+    <Title>AzTableCopy</Title>
+    <Authors>Erik O'Leary (@onionhammer)</Authors>
+    <Description>Copies input azure table to files</Description>
+    <PackageProjectUrl>https://github.com/onionhammer/Wivuu.AzTableCopy</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/onionhammer/Wivuu.AzTableCopy</RepositoryUrl>
+    <PackageTags>azure;table;storage;backup;copy</PackageTags>
+    <Copyright>Wivuu LLC, 2019</Copyright>
+
+    <ToolCommandName>AzTableCopy</ToolCommandName>
+    <PackAsTool>true</PackAsTool>
+    <PackageOutputPath>./nupkg</PackageOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
