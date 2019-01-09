@@ -23,7 +23,9 @@ namespace Wivuu.AzTableCopy
             var pkOption        = app.Option("--partition <STRING>", "PK partitioning rule", CommandOptionType.SingleValue);
             var parallelOption  = app.Option("--parallel <NUM>", "Parallelism", CommandOptionType.SingleValue);
 
-            var destOption = app.Option("-d|--dest <PATH>", "Destination file path", CommandOptionType.SingleValue).IsRequired();
+            var destOption      = app.Option("-d|--dest <PATH>", "Destination file path", CommandOptionType.SingleValue);
+            var httpOption      = app.Option("-w|--web", "Web server -- alternative to destination", CommandOptionType.NoValue);
+            var httpPortOption  = app.Option("--port", "Web port (default 8081)", CommandOptionType.SingleValue);
 
             // Execute command line interface
             app.OnExecute(() => ExecuteAsync().GetAwaiter().GetResult());
@@ -37,9 +39,25 @@ namespace Wivuu.AzTableCopy
 
                 var parallelInt = int.TryParse(parallelOption.Value(), out var _p) ? _p : default(int?);
 
-                using (var file = new FileConsumer(destOption.Value(), parallelInt))
+                ITableEntryConsumer consumer;
+
+                if (destOption.HasValue())
+                    consumer = new FileConsumer(destOption.Value(), parallelInt);
+                else if (httpOption.HasValue())
                 {
-                    var ts = new TableStream(sourceOption.Value(), sourceKeyOption.Value(), file)
+                    var httpPort = int.TryParse(httpPortOption.Value(), out var _h) ? _h : default(int?);
+                    consumer = new WebConsumer(httpPort);
+                }
+                else {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Must choose destination (path) or web option");
+                    Console.ResetColor();
+                    return;
+                }
+
+                using (consumer)
+                {
+                    var ts = new TableStream(sourceOption.Value(), sourceKeyOption.Value(), consumer)
                     {
                         Filter    = filterOption.Value(),
                         Partition = pkOption.Value()
@@ -49,7 +67,7 @@ namespace Wivuu.AzTableCopy
                         ts.Parallelism = parallelInt.Value;
 
                     await ts.ProcessAsync();
-                    await file.DoneAsync();
+                    await consumer.DoneAsync();
                 }
 
                 stopwatch.Stop();

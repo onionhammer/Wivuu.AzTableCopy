@@ -37,6 +37,8 @@ namespace Wivuu.AzTableCopy
         {
             var N = Parallel ?? Environment.ProcessorCount;
 
+            Console.WriteLine($"Writing data to {Destination}...");
+
             _ = Task.WhenAll(
                 // Create N consumers                
                 from i in Enumerable.Range(0, N)
