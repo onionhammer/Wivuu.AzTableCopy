@@ -14,7 +14,7 @@ namespace Wivuu.AzTableCopy
         public CloudTable Table { get; }
         public string Filter { get; set; }
         public string Partition { get; set; }
-        public int Parallelism { get; set; } = Environment.ProcessorCount;
+        public int Parallelism { get; set; } = Environment.ProcessorCount * 4;
         public ITableEntryConsumer Consumer { get; }
 
         public TableStream(string source, string sourceKey, ITableEntryConsumer consumer)

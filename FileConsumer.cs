@@ -30,13 +30,11 @@ namespace Wivuu.AzTableCopy
             Destination = path;
             Parallel    = parallel;
 
-            StartConsumers(Environment.ProcessorCount);
+            StartConsumers(Environment.ProcessorCount * 4);
         }
 
-        private void StartConsumers(int processorCount)
+        private void StartConsumers(int N)
         {
-            var N = Parallel ?? Environment.ProcessorCount;
-
             Console.WriteLine($"Writing data to {Destination}...");
 
             _ = Task.WhenAll(
