@@ -5,6 +5,10 @@ Copies input azure table to files
 ## CLI Usage
 
 ```
+dotnet tool install Wivuu.AzTableCopy --global
+```
+
+```
 AzTableCopy [options]
 
 Options:
@@ -46,4 +50,4 @@ using (var consumer = new MyCustomConsumer())
 ```
 
 ## Next:
-- Built in web server consumer for streaming data over HTTP
+- Built in web server consumer for streaming data over HTTP (beta)
