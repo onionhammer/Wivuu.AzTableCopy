@@ -5,7 +5,7 @@ using McMaster.Extensions.CommandLineUtils;
 
 namespace Wivuu.AzTableCopy
 {
-    class Program
+    internal class Program
     {
         static int Main(string[] args)
         {
@@ -24,8 +24,8 @@ namespace Wivuu.AzTableCopy
             var parallelOption  = app.Option("--parallel <NUM>", "Parallelism", CommandOptionType.SingleValue);
 
             var destOption      = app.Option("-d|--dest <PATH>", "Destination file path", CommandOptionType.SingleValue);
-            var httpOption      = app.Option("-w|--web", "Web server -- alternative to destination", CommandOptionType.NoValue);
-            var httpPortOption  = app.Option("--port", "Web port (default 8081)", CommandOptionType.SingleValue);
+            var httpOption      = app.Option("--http", "Http server -- alternative to destination", CommandOptionType.NoValue);
+            var httpPortOption  = app.Option("--port", "Http port (default 8081)", CommandOptionType.SingleValue);
 
             // Execute command line interface
             app.OnExecute(() => ExecuteAsync().GetAwaiter().GetResult());

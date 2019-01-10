@@ -30,7 +30,7 @@ namespace Wivuu.AzTableCopy
             Destination = path;
             Parallel    = parallel;
 
-            StartConsumers(Environment.ProcessorCount * 4);
+            StartConsumers(4);
         }
 
         private void StartConsumers(int N)
