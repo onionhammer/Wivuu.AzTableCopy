@@ -5,7 +5,7 @@ Copies input azure table to files
 ## CLI Usage
 
 ```
-dotnet tool install Wivuu.AzTableCopy
+dotnet tool install Wivuu.AzTableCopy --global
 ```
 
 ```
