@@ -11,10 +11,8 @@ using Newtonsoft.Json;
 
 namespace Wivuu.AzTableCopy
 {
-    public class FileConsumer : ITableEntryConsumer, IDisposable
+    public class FileConsumer : GenericConsumer
     {
-        public TaskCompletionSource<int> Completion { get; }
-        public BlockingCollection<DynamicTableEntity> PubSub { get; }
         public string Destination { get; }
 
         public FileConsumer(string path)
@@ -24,75 +22,44 @@ namespace Wivuu.AzTableCopy
             if (!Directory.Exists(dirName))
                 Directory.CreateDirectory(dirName);
 
-            Completion  = new TaskCompletionSource<int>();
-            PubSub      = new BlockingCollection<DynamicTableEntity>();
             Destination = path;
 
-            StartConsumers(4);
+            Console.WriteLine($"Writing data to {Destination}...");
+            
+            StartConsumers(N: 4);
         }
 
-        private void StartConsumers(int N)
+        public override async Task ConsumeAsync(int index)
         {
-            Console.WriteLine($"Writing data to {Destination}...");
+            var filename   = $"table-{index}.csv";
+            var outputPath = Path.Join(Destination, filename);
+            var converter  = new TableEntityConverter();
 
-            _ = Task.WhenAll(
-                // Create N consumers                
-                from i in Enumerable.Range(0, N)
-                select Task.Run(() => Consumer(i))
-            ).ContinueWith(_ => Completion.SetResult(0));
-
-            async Task Consumer(int index)
+            using (var tw  = File.CreateText(outputPath))
+            using (var csv = new CsvWriter(tw))
             {
-                var filename   = $"table-{index}.csv";
-                var outputPath = Path.Join(Destination, filename);
-                var converter  = new TableEntityConverter();
+                csv.WriteField("PartitionKey");
+                csv.WriteField("RowKey");
+                csv.WriteField("Timestamp");
+                csv.WriteField("Data");
+                await csv.NextRecordAsync();
 
-                using (var tw  = File.CreateText(outputPath))
-                using (var csv = new CsvWriter(tw))
+                foreach (var row in PubSub.GetConsumingEnumerable())
                 {
-                    csv.WriteField("PartitionKey");
-                    csv.WriteField("RowKey");
-                    csv.WriteField("Timestamp");
-                    csv.WriteField("Data");
+                    csv.WriteField(row.PartitionKey);
+                    csv.WriteField(row.RowKey);
+                    csv.WriteField(row.Timestamp.UtcDateTime.ToString("O"));
+                    
+                    var data = JsonConvert.SerializeObject(
+                        row.Properties,
+                        converter
+                    );
+
+                    csv.WriteField(data);
+
                     await csv.NextRecordAsync();
-
-                    foreach (var row in PubSub.GetConsumingEnumerable())
-                    {
-                        csv.WriteField(row.PartitionKey);
-                        csv.WriteField(row.RowKey);
-                        csv.WriteField(row.Timestamp.UtcDateTime.ToString("O"));
-                        
-                        var data = JsonConvert.SerializeObject(
-                            row.Properties,
-                            converter
-                        );
-
-                        csv.WriteField(data);
-
-                        await csv.NextRecordAsync();
-                    }
                 }
             }
-        }
-
-        public Task TakeAsync(IList<DynamicTableEntity> entries)
-        {
-            for (var i = 0; i < entries.Count; ++i)
-                PubSub.Add(entries[i]);
-
-            return Task.CompletedTask;
-        }
-
-        public async Task DoneAsync() 
-        {
-            PubSub.CompleteAdding();
-
-            await Completion.Task;
-        }
-        
-        public void Dispose()
-        {
-            PubSub.Dispose();
         }
     }
 }
