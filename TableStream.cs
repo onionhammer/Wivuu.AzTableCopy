@@ -100,7 +100,7 @@ namespace Wivuu.AzTableCopy
             void ReportStat()
             {
                 var totalSec = totalMs / 1000.0f;
-                Console.WriteLine($"Processed {totalNum / totalSec}/s, overall: {overallTotal}");
+                Console.WriteLine($"Processed {totalNum / totalSec}/s, total: {overallTotal}");
 
                 totalMs  = 0;
                 totalNum = 0;
