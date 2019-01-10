@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using PropertyList = System.Collections.Generic.IEnumerable<System.ValueTuple<string, object>>;
+using PropertyList = System.Collections.Generic.IDictionary<string, Microsoft.WindowsAzure.Storage.Table.EntityProperty>;
 
 namespace Wivuu.AzTableCopy
 {
@@ -22,7 +22,7 @@ namespace Wivuu.AzTableCopy
                 foreach (var (key, value) in values)
                 {
                     writer.WritePropertyName(key);
-                    writer.WriteValue(value);
+                    writer.WriteValue(value.PropertyAsObject);
                 }
             }
             writer.WriteEndObject();

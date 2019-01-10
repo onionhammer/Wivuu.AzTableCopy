@@ -65,10 +65,7 @@ namespace Wivuu.AzTableCopy
                         csv.WriteField(row.Timestamp.UtcDateTime.ToString("O"));
                         
                         var data = JsonConvert.SerializeObject(
-                            row.Properties.Select(p => (
-                                key:   p.Key, 
-                                value: p.Value.PropertyAsObject
-                            )),
+                            row.Properties,
                             converter
                         );
 
