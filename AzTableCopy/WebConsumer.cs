@@ -40,7 +40,6 @@ namespace Wivuu.AzTableCopy
                 .UseKestrel(options => {
                     options.Listen(IPAddress.Any, HttpPort);
                 })
-                // .UseStartup<WebConsumerStartup>()
                 .Build();
 
             _ = Host.RunAsync();

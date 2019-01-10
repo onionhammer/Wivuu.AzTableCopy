@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <TieredCompilation>true</TieredCompilation>
 
-    <PackageId>Wivuu.AzTableCopy</PackageId>
-    <Version>0.1.2</Version>
+    <PackageId>Wivuu.AzTableCopy.Lib</PackageId>
+    <Version>0.1.3</Version>
     <Title>AzTableCopy</Title>
     <Authors>Erik O'Leary (@onionhammer)</Authors>
     <Description>Copies input azure table to files</Description>
@@ -16,16 +16,10 @@
     <PackageTags>azure;table;storage;backup;copy</PackageTags>
     <Copyright>Wivuu LLC, 2019</Copyright>
 
-    <ToolCommandName>AzTableCopy</ToolCommandName>
-    <PackAsTool>true</PackAsTool>
     <PackageOutputPath>./nupkg</PackageOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CsvHelper" Version="12.1.1" />
-    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.3.0" />
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
   </ItemGroup>
 

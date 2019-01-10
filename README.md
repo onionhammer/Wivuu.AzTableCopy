@@ -5,7 +5,7 @@ Copies input azure table to files
 ## CLI Usage
 
 ```
-dotnet tool install Wivuu.AzTableCopy --global
+dotnet tool install Wivuu.AzTableCopy -g
 ```
 
 ```
@@ -26,7 +26,7 @@ Options:
 Add to your project
 
 ```
-dotnet add package Wivuu.AzTableCopy
+dotnet add package Wivuu.AzTableCopy.Lib
 ```
 
 Implement a custom consumer (in this example `MyCustomConsumer`), and pass it to the table stream.
