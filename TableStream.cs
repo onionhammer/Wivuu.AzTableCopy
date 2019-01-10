@@ -79,15 +79,17 @@ namespace Wivuu.AzTableCopy
 
             const int REPORT_INTERVAL_MS = 5_000;
 
-            long totalMs = 0;
-            int totalNum = 0;
+            long totalMs      = 0;
+            int  totalNum     = 0;
+            long overallTotal = 0;
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
             foreach (var (ms, num) in Statistics.GetConsumingEnumerable())
             {
-                totalMs  += ms;
-                totalNum += num;
+                totalMs      += ms;
+                totalNum     += num;
+                overallTotal += num;
 
                 if (stopwatch.ElapsedMilliseconds > REPORT_INTERVAL_MS)
                     ReportStat();
@@ -98,7 +100,7 @@ namespace Wivuu.AzTableCopy
             void ReportStat()
             {
                 var totalSec = totalMs / 1000.0f;
-                Console.WriteLine($"Processed {totalNum / totalSec}/s");
+                Console.WriteLine($"Processed {totalNum / totalSec}/s, overall: {overallTotal}");
 
                 totalMs  = 0;
                 totalNum = 0;
