@@ -40,7 +40,7 @@ namespace Wivuu.AzTableCopy
 
             Table      = tableClient.GetTableReference(fullUri.Segments[1]);
             Consumer   = consumer;
-            Statistics = new BlockingCollection<(long ms, int num)>(1000);
+            Statistics = new BlockingCollection<(long ms, int num)>();
         }
 
         public async Task ProcessAsync()

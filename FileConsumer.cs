@@ -26,7 +26,7 @@ namespace Wivuu.AzTableCopy
                 Directory.CreateDirectory(dirName);
 
             Completion  = new TaskCompletionSource<int>();
-            PubSub      = new BlockingCollection<DynamicTableEntity>(10_000);
+            PubSub      = new BlockingCollection<DynamicTableEntity>();
             Destination = path;
             Parallel    = parallel;
 
