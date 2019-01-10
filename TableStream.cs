@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -14,8 +16,9 @@ namespace Wivuu.AzTableCopy
         public CloudTable Table { get; }
         public string Filter { get; set; }
         public string Partition { get; set; }
-        public int Parallelism { get; set; } = Environment.ProcessorCount * 4;
+        public int Parallelism { get; set; } = Environment.ProcessorCount;
         public ITableEntryConsumer Consumer { get; }
+        public BlockingCollection<(long ms, int num)> Statistics { get; }
 
         public TableStream(string source, string sourceKey, ITableEntryConsumer consumer)
         {
@@ -35,8 +38,9 @@ namespace Wivuu.AzTableCopy
                 tableUri.Uri,
                 new StorageCredentials(account, sourceKey));
 
-            Table    = tableClient.GetTableReference(fullUri.Segments[1]);
-            Consumer = consumer;
+            Table      = tableClient.GetTableReference(fullUri.Segments[1]);
+            Consumer   = consumer;
+            Statistics = new BlockingCollection<(long ms, int num)>(1000);
         }
 
         public async Task ProcessAsync()
@@ -55,17 +59,58 @@ namespace Wivuu.AzTableCopy
                               FilterString = filter
                           };
 
+            var stats = StartStatisticsDisplay();
+
             foreach (var group in GroupByN(Parallelism, queries))
             {
                 await Task.WhenAll(
                     group.Select(GenerateDataForQuery)
                 );
             }
+
+            Statistics.CompleteAdding();
+            await stats;
+            Statistics.Dispose();
+        }
+
+        private async Task StartStatisticsDisplay()
+        {
+            await Task.Yield();
+
+            const int REPORT_INTERVAL_MS = 5_000;
+
+            long totalMs = 0;
+            int totalNum = 0;
+
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            foreach (var (ms, num) in Statistics.GetConsumingEnumerable())
+            {
+                totalMs  += ms;
+                totalNum += num;
+
+                if (stopwatch.ElapsedMilliseconds > REPORT_INTERVAL_MS)
+                    ReportStat();
+            }
+
+            ReportStat();
+
+            void ReportStat()
+            {
+                var totalSec = totalMs / 1000.0f;
+                Console.WriteLine($"Processed {totalNum / totalSec}/s");
+
+                totalMs  = 0;
+                totalNum = 0;
+                stopwatch.Restart();
+            }
         }
 
         async Task GenerateDataForQuery(TableQuery query)
         {
             TableContinuationToken next = default;
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
 
             try
             {
@@ -74,9 +119,16 @@ namespace Wivuu.AzTableCopy
                     var segment = await Table.ExecuteQuerySegmentedAsync(query, next);
 
                     if (segment.Results.Count > 0)
+                    {
                         await Consumer.TakeAsync(segment.Results);
-                    
+
+                        // Log statistics
+                        Statistics.Add(( stopwatch.ElapsedMilliseconds, segment.Results.Count ));
+                        stopwatch.Restart();
+                    }
+
                     next = segment.ContinuationToken;
+
                 }
                 while (next != null);
             }
@@ -91,7 +143,7 @@ namespace Wivuu.AzTableCopy
                 .Select((value, index) => (value, index / N))
                 .GroupBy(p => p.Item2)
                 .Select(t => t.Select(r => r.value));
-        
+
         IEnumerable<string> GetPartitions(string partitionBy)
         {
             if (!string.IsNullOrEmpty(partitionBy))

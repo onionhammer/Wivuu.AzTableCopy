@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using CsvHelper;
 using Microsoft.AspNetCore;
@@ -16,10 +17,6 @@ using Newtonsoft.Json;
 
 namespace Wivuu.AzTableCopy
 {
-    public class WebConsumerStartup
-    {
-    }
-
     public class WebConsumer : ITableEntryConsumer, IStartup
     {
         public int HttpPort { get; }
@@ -56,46 +53,48 @@ namespace Wivuu.AzTableCopy
 
         public void Configure(IApplicationBuilder app)
         {
-            app.Run(async context => {
+            app.Run(async context =>
+            {
                 var converter = new TableEntityConverter();
 
-                context.Response.OnCompleted(() =>  {
-                    // Completion.SetResult(0);
-                    return Task.CompletedTask;
-                });
-
-                do
+                using (var ms = new MemoryStream(8192))
                 {
-                    using (var ms  = new MemoryStream(10294))
-                    using (var tw  = new StreamWriter(ms))
-                    using (var csv = new CsvWriter(tw))
+                    do
                     {
-                        foreach (var row in PubSub.Take(10000))
+                        using (var tw  = new StreamWriter(ms, Encoding.UTF8, 4096, true))
+                        using (var csv = new CsvWriter(tw))
                         {
-                            csv.WriteField(row.PartitionKey);
-                            csv.WriteField(row.RowKey);
-                            csv.WriteField(row.Timestamp.UtcDateTime.ToString("O"));
-                            
-                            var data = JsonConvert.SerializeObject(
-                                row.Properties.Select(p => (
-                                    key:   p.Key, 
-                                    value: p.Value.PropertyAsObject
-                                )),
-                                converter
-                            );
+                            foreach (var row in PubSub.Take(1000))
+                            {
+                                csv.WriteField(row.PartitionKey);
+                                csv.WriteField(row.RowKey);
+                                csv.WriteField(row.Timestamp.UtcDateTime.ToString("O"));
+                                
+                                var data = JsonConvert.SerializeObject(
+                                    row.Properties.Select(p => (
+                                        key:   p.Key,
+                                        value: p.Value.PropertyAsObject
+                                    )),
+                                    converter
+                                );
 
-                            csv.WriteField(data);
+                                csv.WriteField(data);
 
-                            await csv.NextRecordAsync();
+                                await csv.NextRecordAsync();
+                            }
                         }
 
                         await context.Response.Body.WriteAsync(ms.ToArray());
+
+                        ms.Position = 0;
+                        ms.SetLength(0);
                     }
+                    while (PubSub.IsAddingCompleted == false);
                 }
-                while (PubSub.IsAddingCompleted == false);
 
                 await context.Response.Body.FlushAsync();
-                // context.Response.Body.EndWrite(default);
+
+                Completion.SetResult(0);
             });
         }
 
