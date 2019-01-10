@@ -130,7 +130,6 @@ namespace Wivuu.AzTableCopy
                     }
 
                     next = segment.ContinuationToken;
-
                 }
                 while (next != null);
             }
