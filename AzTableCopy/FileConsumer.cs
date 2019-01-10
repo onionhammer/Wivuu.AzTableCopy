@@ -16,9 +16,8 @@ namespace Wivuu.AzTableCopy
         public TaskCompletionSource<int> Completion { get; }
         public BlockingCollection<DynamicTableEntity> PubSub { get; }
         public string Destination { get; }
-        public int? Parallel { get; }
 
-        public FileConsumer(string path, int? parallel)
+        public FileConsumer(string path)
         {
             var dirName = path;
 
@@ -28,7 +27,6 @@ namespace Wivuu.AzTableCopy
             Completion  = new TaskCompletionSource<int>();
             PubSub      = new BlockingCollection<DynamicTableEntity>();
             Destination = path;
-            Parallel    = parallel;
 
             StartConsumers(4);
         }

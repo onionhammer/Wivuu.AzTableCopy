@@ -42,7 +42,7 @@ namespace Wivuu.AzTableCopy
                 ITableEntryConsumer consumer;
 
                 if (destOption.HasValue())
-                    consumer = new FileConsumer(destOption.Value(), parallelInt);
+                    consumer = new FileConsumer(destOption.Value());
                 else if (httpOption.HasValue())
                 {
                     var httpPort = int.TryParse(httpPortOption.Value(), out var _h) ? _h : default(int?);
