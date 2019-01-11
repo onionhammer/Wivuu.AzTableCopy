@@ -16,7 +16,14 @@ namespace Wivuu.AzTableCopy
             = new TaskCompletionSource<int>();
 
         protected BlockingCollection<DynamicTableEntity> PubSub { get; }
-            = new BlockingCollection<DynamicTableEntity>();
+
+        public GenericConsumer(int? MaxWaitCapacity = null)
+        {
+            if (MaxWaitCapacity.HasValue)
+                PubSub = new BlockingCollection<DynamicTableEntity>(MaxWaitCapacity.Value);
+            else
+                PubSub = new BlockingCollection<DynamicTableEntity>();
+        }
 
         protected void StartConsumers(int N)
         {
