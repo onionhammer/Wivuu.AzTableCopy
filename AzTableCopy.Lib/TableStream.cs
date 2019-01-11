@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Auth;
@@ -43,7 +44,7 @@ namespace Wivuu.AzTableCopy
             Statistics = new BlockingCollection<(long ms, int num)>();
         }
 
-        public async Task ProcessAsync()
+        public async Task ProcessAsync(CancellationToken cancellation = default)
         {
             // Ensure table exists
             if (!await Table.ExistsAsync())
@@ -71,6 +72,38 @@ namespace Wivuu.AzTableCopy
             Statistics.CompleteAdding();
             await stats;
             Statistics.Dispose();
+            
+            /// Generate data
+            async Task GenerateDataForQuery(TableQuery query)
+            {
+                TableContinuationToken next = default;
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+
+                try
+                {
+                    do
+                    {
+                        var segment = await Table.ExecuteQuerySegmentedAsync(query, next, null, null, cancellation);
+
+                        if (segment.Results.Count > 0)
+                        {
+                            await Consumer.TakeAsync(segment.Results);
+
+                            // Log statistics
+                            Statistics.Add(( stopwatch.ElapsedMilliseconds, segment.Results.Count ));
+                            stopwatch.Restart();
+                        }
+
+                        next = segment.ContinuationToken;
+                    }
+                    while (next != null);
+                }
+                catch (StorageException error)
+                {
+                    Console.WriteLine(error.RequestInformation.Exception.ToString());
+                }
+            }
         }
 
         private async Task StartStatisticsDisplay()
@@ -105,37 +138,6 @@ namespace Wivuu.AzTableCopy
                 totalMs  = 0;
                 totalNum = 0;
                 stopwatch.Restart();
-            }
-        }
-
-        async Task GenerateDataForQuery(TableQuery query)
-        {
-            TableContinuationToken next = default;
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-
-            try
-            {
-                do
-                {
-                    var segment = await Table.ExecuteQuerySegmentedAsync(query, next);
-
-                    if (segment.Results.Count > 0)
-                    {
-                        await Consumer.TakeAsync(segment.Results);
-
-                        // Log statistics
-                        Statistics.Add(( stopwatch.ElapsedMilliseconds, segment.Results.Count ));
-                        stopwatch.Restart();
-                    }
-
-                    next = segment.ContinuationToken;
-                }
-                while (next != null);
-            }
-            catch (StorageException error)
-            {
-                Console.WriteLine(error.RequestInformation.Exception.ToString());
             }
         }
 

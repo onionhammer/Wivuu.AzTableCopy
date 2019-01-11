@@ -17,15 +17,17 @@ namespace Wivuu.AzTableCopy
 
         protected BlockingCollection<DynamicTableEntity> PubSub { get; }
 
-        public GenericConsumer(int? MaxWaitCapacity = null)
+        public GenericConsumer(int parallelism = 1, int? MaxWaitCapacity = null)
         {
             if (MaxWaitCapacity.HasValue)
                 PubSub = new BlockingCollection<DynamicTableEntity>(MaxWaitCapacity.Value);
             else
                 PubSub = new BlockingCollection<DynamicTableEntity>();
+
+            StartConsumers(parallelism);
         }
 
-        protected void StartConsumers(int N)
+        private void StartConsumers(int N)
         {
             _ = Task.WhenAll(
                 // Create N consumers                

@@ -15,7 +15,7 @@ namespace Wivuu.AzTableCopy
     {
         public string Destination { get; }
 
-        public FileConsumer(string path)
+        public FileConsumer(string path) : base(parallelism: 4)
         {
             var dirName = path;
 
@@ -25,8 +25,6 @@ namespace Wivuu.AzTableCopy
             Destination = path;
 
             Console.WriteLine($"Writing data to {Destination}...");
-            
-            StartConsumers(N: 4);
         }
 
         public override async Task ConsumeAsync(int index)
