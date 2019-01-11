@@ -7,7 +7,7 @@
     <TieredCompilation>true</TieredCompilation>
 
     <PackageId>Wivuu.AzTableCopy.Lib</PackageId>
-    <Version>0.1.5</Version>
+    <Version>0.1.6</Version>
     <Title>AzTableCopy</Title>
     <Authors>Erik O'Leary (@onionhammer)</Authors>
     <Description>Copies input azure table to files</Description>
