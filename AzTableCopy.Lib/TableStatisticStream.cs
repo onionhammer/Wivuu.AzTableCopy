@@ -52,13 +52,14 @@ namespace Wivuu.AzTableCopy
 
             var partitionBy = Partition;
             var filterBy    = Filter;
+            var select      = new List<string> { "PartitionKey" };
 
             var queries = from partition in GetPartitions(partitionBy)
                           let filter = IncludeFilter(partition)
                           select new TableQuery
                           {
                               FilterString  = filter,
-                              SelectColumns = new List<string> { "PartitionKey", "RowKey" }
+                              SelectColumns = @select
                           };
 
             var stats = StartStatisticsDisplay();
