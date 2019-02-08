@@ -27,6 +27,10 @@ namespace Wivuu.AzTableCopy
             var httpOption      = app.Option("--http", "Http server -- alternative to destination", CommandOptionType.NoValue);
             var httpPortOption  = app.Option("--port", "Http port (default 8081)", CommandOptionType.SingleValue);
 
+            app.Command("count", countCmd => {
+                countCmd.OnExecute(() => CountAsync().GetAwaiter().GetResult());
+            });
+
             // Execute command line interface
             app.OnExecute(() => ExecuteAsync().GetAwaiter().GetResult());
 
@@ -58,6 +62,32 @@ namespace Wivuu.AzTableCopy
                 using (consumer)
                 {
                     var ts = new TableStream(sourceOption.Value(), sourceKeyOption.Value(), consumer)
+                    {
+                        Filter    = filterOption.Value(),
+                        Partition = pkOption.Value()
+                    };
+                    
+                    if (parallelInt.HasValue)
+                        ts.Parallelism = parallelInt.Value;
+
+                    await ts.ProcessAsync();
+                    await consumer.DoneAsync();
+                }
+
+                stopwatch.Stop();
+                Console.WriteLine($"Elapsed: {stopwatch.Elapsed}");
+            }
+            
+            async Task CountAsync() 
+            {
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+
+                var parallelInt = int.TryParse(parallelOption.Value(), out var _p) ? _p : default(int?);
+
+                using (var consumer = new StatisticConsumer())
+                {
+                    var ts = new TableStatisticStream(sourceOption.Value(), sourceKeyOption.Value(), consumer)
                     {
                         Filter    = filterOption.Value(),
                         Partition = pkOption.Value()
