@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Wivuu.AzTableCopy
 {
-    class StatisticConsumer : ITableStatisticConsumer
+    public class StatisticConsumer : ITableStatisticConsumer
     {
         public int Total = 0;
 
