@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Table;
 using Wivuu.AzTableCopy;
@@ -32,7 +33,12 @@ namespace Wivuu.AzTableCopy
             _ = Task.WhenAll(
                 // Create N consumers                
                 from i in Enumerable.Range(0, N)
-                select Task.Run(() => ConsumeAsync(i))
+                select Task.Factory.StartNew(
+                    () => ConsumeAsync(i), 
+                    CancellationToken.None, 
+                    TaskCreationOptions.LongRunning, 
+                    TaskScheduler.Default
+                )
             ).ContinueWith(_ => Completion.SetResult(0));
         }
 
