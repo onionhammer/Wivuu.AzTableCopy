@@ -38,7 +38,7 @@ namespace Wivuu.AzTableCopy
                     CancellationToken.None, 
                     TaskCreationOptions.LongRunning, 
                     TaskScheduler.Default
-                )
+                ).Unwrap()
             ).ContinueWith(_ => Completion.SetResult(0));
         }
 
